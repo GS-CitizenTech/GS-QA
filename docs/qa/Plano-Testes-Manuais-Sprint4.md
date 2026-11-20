@@ -268,7 +268,23 @@ Validar em nível de sistema os fluxos de maior risco da API REST Alerta Cidadã
 
 ## Evidência e registro no Azure Boards
 
-Para cada execução, registrar no Test Case: data/hora e ambiente; resultado Passed/Failed/Blocked; build/commit; código HTTP e resposta sanitizada; IDs gerados de QA; captura de tela/log sem token, senha, connection string ou hash. Casos dependentes de Oracle só podem ser marcados Passed após execução em Oracle QA. Casos deste documento ainda estão em estado Proposed; não representam resultados executados.
+Projeto Azure: [Qa-rm563088](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088). Os itens abaixo foram criados na iteração `Qa-rm563088\Sprint 4`; todos permanecem em `To Do` porque o plano é de testes, não um registro de execução manual.
 
-Criar cada ID MAN-01 a MAN-13 como **Test Case** no plano da Sprint 4, copiando o objetivo para Description e cada passo com seu resultado esperado para Steps. Associar ao release/sprint real e aos requisitos/tarefas correspondentes. A URL do projeto Azure, área/iteração e IDs de backlog serão preenchidos quando o projeto Azure estiver disponível.
+| ID do plano | Item Azure Boards |
+|---|---|
+| MAN-01 | [Issue 1](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/1) |
+| MAN-02 | [Issue 2](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/2) |
+| MAN-03 | [Issue 3](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/3) |
+| MAN-04 | [Issue 4](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/4) |
+| MAN-05 | [Issue 5](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/5) |
+| MAN-06 | [Issue 6](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/6) |
+| MAN-07 | [Issue 7](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/7) |
+| MAN-08 | [Issue 8](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/8) |
+| MAN-09 | [Issue 9](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/9) |
+| MAN-10 | [Issue 10](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/10) |
+| MAN-11 | [Issue 11](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/11) |
+| MAN-12 | [Issue 12](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/12) |
+| MAN-13 | [Issue 13](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/13) |
+
+O projeto usa o processo Azure Basic, que oferece os work items Epic, Issue e Task; o recurso Test Plans informa licença limitada. Por isso, cada caso foi registrado como Issue com objetivo, entrada, saída esperada e procedimento completos na descrição, em vez de um Test Case nativo. Para cada execução futura, registrar data/hora e ambiente; resultado Passed/Failed/Blocked; build/commit; código HTTP e resposta sanitizada; IDs gerados de QA; captura de tela/log sem token, senha, connection string ou hash. Casos dependentes de Oracle só podem ser marcados Passed após execução em Oracle QA.
 

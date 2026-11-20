@@ -31,8 +31,3 @@ Para repetir os cinco casos xUnit, na pasta deste repositório QA:
 Para repetir a carga, na raiz do projeto Alerta Cidadão:
 
     dotnet run --project .\tools\AlertaCidadao.LoadTest\AlertaCidadao.LoadTest.csproj --configuration Release -- --base-url http://127.0.0.1:5075 --path /health/live --users 20 --requests 50 --p95-limit-ms 2000 --output .\artifacts\qa-evidence\teste-carga-sprint4.csv
-
-## Vídeo
-
-O vídeo de configuração e execução será acrescentado depois da gravação.
-

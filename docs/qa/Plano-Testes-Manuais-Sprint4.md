@@ -21,6 +21,7 @@ Validar em nível de sistema os fluxos de maior risco da API REST Alerta Cidadã
 | MAN-11 | Alertas | Criar e resolver alerta e preservar integridade da leitura associada. | 1 |
 | MAN-12 | Rate limiting | Aplicar limite de login e devolver Retry-After. | 2 |
 | MAN-13 | Pipeline da Sprint 4 | Confirmar build, testes e artefato para develop. | 1 |
+| MAN-14 | CRUD de usuários | Consultar, atualizar e desativar logicamente um cidadão. | 1 |
 
 ## Ambiente e dados controlados
 
@@ -266,6 +267,25 @@ Validar em nível de sistema os fluxos de maior risco da API REST Alerta Cidadã
 4. Conferir o artefato `drop`.
 5. Confirmar que segredo Oracle/JWT não aparece nos logs. Se o deployment de QA for habilitado, validar `/health/live`, Swagger e readiness após deploy.
 
+### MAN-14 — CRUD de usuário: consulta, atualização e desativação lógica
+
+**Objetivo:** validar consulta individual, atualização e desativação lógica de cidadão, completando o CRUD do recurso usuário.
+
+**Pré-condições:** usuário criado no MAN-04; token gestor válido; e-mail atualizado ainda não usado em QA.
+
+**Dados de entrada:** `GET /api/usuarios/{{idUsuario}}`; `PUT /api/usuarios/{{idUsuario}}` com `Idempotency-Key: qa-s4-man-usuario-atualizar-001` e corpo `{"nome":"Cidadão QA Sprint 4 Atualizado","email":"qa.s4.cidadao.atualizado@example.test","senha":null,"telefone":"11999990000","perfil":"CIDADAO","ativo":true}`; `DELETE /api/usuarios/{{idUsuario}}` com `Idempotency-Key: qa-s4-man-usuario-desativar-001`; `GET /api/usuarios?incluirInativos=true` e `GET /api/usuarios`.
+
+**Saída esperada:** GET inicial `200 OK` com os dados do MAN-04. PUT `200 OK` com nome, e-mail e telefone atualizados, `ativo = true` e sem senha/hash no corpo. DELETE `204 No Content`. Com `incluirInativos=true`, o usuário aparece com `ativo = false`; na listagem padrão, não aparece.
+
+**Procedimento:**
+
+1. Consultar o usuário por ID com token gestor e conferir os dados criados no MAN-04.
+2. Atualizar com os valores controlados e a chave indicada.
+3. Validar `200`, os campos atualizados e a ausência de senha/hash.
+4. Desativar com uma chave idempotente nova e validar `204`.
+5. Consultar a listagem com `incluirInativos=true` e confirmar `ativo = false`.
+6. Consultar a listagem padrão e confirmar que o usuário desativado não aparece.
+
 ## Evidência e registro no Azure Boards
 
 Projeto Azure: [Qa-rm563088](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088). Os itens abaixo foram criados na iteração `Qa-rm563088\Sprint 4`; todos permanecem em `To Do` porque o plano é de testes, não um registro de execução manual.
@@ -285,6 +305,7 @@ Projeto Azure: [Qa-rm563088](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm56308
 | MAN-11 | [Issue 11](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/11) |
 | MAN-12 | [Issue 12](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/12) |
 | MAN-13 | [Issue 13](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/13) |
+| MAN-14 | [Issue 14](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/14) |
 
 O projeto usa o processo Azure Basic, que oferece os work items Epic, Issue e Task; o recurso Test Plans informa licença limitada. Por isso, cada caso foi registrado como Issue com objetivo, entrada, saída esperada e procedimento completos na descrição, em vez de um Test Case nativo. Para cada execução futura, registrar data/hora e ambiente; resultado Passed/Failed/Blocked; build/commit; código HTTP e resposta sanitizada; IDs gerados de QA; captura de tela/log sem token, senha, connection string ou hash. Casos dependentes de Oracle só podem ser marcados Passed após execução em Oracle QA.
 

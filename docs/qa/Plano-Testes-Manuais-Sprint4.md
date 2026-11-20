@@ -22,6 +22,7 @@ Validar em nível de sistema os fluxos de maior risco da API REST Alerta Cidadã
 | MAN-12 | Rate limiting | Aplicar limite de login e devolver Retry-After. | 2 |
 | MAN-13 | Pipeline da Sprint 4 | Confirmar build, testes e artefato para develop. | 1 |
 | MAN-14 | CRUD de usuários | Consultar, atualizar e desativar logicamente um cidadão. | 1 |
+| MAN-15 | Carga controlada | Confirmar respostas e latência p95 do liveness sob concorrência controlada. | 2 |
 
 ## Ambiente e dados controlados
 
@@ -286,6 +287,47 @@ Validar em nível de sistema os fluxos de maior risco da API REST Alerta Cidadã
 5. Consultar a listagem com `incluirInativos=true` e confirmar `ativo = false`.
 6. Consultar a listagem padrão e confirmar que o usuário desativado não aparece.
 
+### MAN-15 — Carga controlada no endpoint de liveness
+
+**Objetivo:** verificar que o processo da API continua respondendo sob uma carga leve, concorrente e reproduzível, registrando latência e vazão.
+
+**Pré-condições:** API executando em ambiente local/QA isolado em http://127.0.0.1:5075; nenhum tráfego de usuários; executar apenas contra localhost ou ambiente QA expressamente autorizado. O teste usa /health/live, que não depende do Oracle e não grava dados.
+
+**Dados de entrada:** GET /health/live; 20 usuários virtuais; 50 requisições por usuário; total de 1.000 chamadas; limite de aprovação p95 de 2.000 ms; sem token, corpo ou dados pessoais.
+
+**Saída esperada:** 1.000 respostas HTTP 200, com status = "Healthy" e check self, sem check oracle; p95 menor ou igual a 2.000 ms; arquivos CSV e resumo Markdown criados em artifacts/qa-evidence.
+
+**Procedimento:**
+
+1. Iniciar a API em http://127.0.0.1:5075 usando configuração local de QA. Não usar produção nem conexão de produção.
+2. Confirmar uma resposta 200 em GET /health/live.
+3. Na raiz do projeto Alerta Cidadão, executar:
+
+   ```powershell
+   dotnet run --project .\tools\AlertaCidadao.LoadTest\AlertaCidadao.LoadTest.csproj --configuration Release -- --base-url http://127.0.0.1:5075 --path /health/live --users 20 --requests 50 --p95-limit-ms 2000 --output .\artifacts\qa-evidence\teste-carga-sprint4.csv
+   ```
+
+4. Conferir no resumo que 1.000 de 1.000 respostas são válidas e que o p95 atende ao limite.
+5. Abrir o CSV e confirmar que ele contém apenas número da amostra, código HTTP, latência e validade do corpo; anexar CSV e resumo ao registro do teste.
+6. Parar a API local e manter o caso como To Do até o responsável registrar a execução no Azure Boards.
+
+**Limite do teste:** esta carga leve mede o endpoint de liveness no host e na máquina usados na execução. Ela não representa benchmark de produção nem valida latência de Oracle ou de operações de escrita.
+
+## Rastreabilidade dos testes para a Release 4
+
+Os casos estão reunidos na Release 4 / Sprint 4 para validar as funcionalidades que estão no código entregue. A rastreabilidade abaixo aponta a funcionalidade e os arquivos/endpoints observáveis no repositório; ela não atribui uma sprint histórica a uma funcionalidade sem o plano original do grupo.
+
+| Grupo funcional | Casos | Referência no projeto |
+|---|---|---|
+| Inicialização, Swagger e health checks | MAN-01–MAN-03, MAN-15 | src/AlertaCidadao.API/Program.cs; src/AlertaCidadao.API/HealthChecks/; rotas /, /swagger, /health/live e /health/ready. |
+| Cadastro, autenticação e autorização | MAN-04–MAN-07, MAN-14 | src/AlertaCidadao.API/Endpoints/UsuarioEndpoints.cs; src/AlertaCidadao.API/Authentication/; src/AlertaCidadao.Application/Services/UsuarioService.cs. |
+| Pontos, leituras e alertas | MAN-08, MAN-10–MAN-11 | src/AlertaCidadao.API/Endpoints/; serviços em src/AlertaCidadao.Application/Services/; repositórios em src/AlertaCidadao.Infrastructure/Repositories/. |
+| Idempotência e limitação de chamadas | MAN-09, MAN-12 | src/AlertaCidadao.API/Filters/IdempotencyEndpointFilter.cs; src/AlertaCidadao.API/RateLimiting/. |
+| Integração contínua | MAN-13 | azure-pipelines.yml; branch develop. |
+| Desempenho sob carga leve | MAN-15 | tools/AlertaCidadao.LoadTest/; artefato CSV e resumo de execução. |
+
+No Azure Boards havia a iteração Sprint 4 e os casos manuais, sem backlog funcional anterior do grupo. Por isso, a relação com as tarefas históricas/PBIs oficiais não foi inventada: os testes apontam para as funcionalidades e evidências de código disponíveis. Se o grupo mantiver um release plan em outro quadro, acrescente os IDs desses itens a esta tabela.
+
 ## Evidência e registro no Azure Boards
 
 Projeto Azure: [Qa-rm563088](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088). Os itens abaixo foram criados na iteração `Qa-rm563088\Sprint 4`; todos permanecem em `To Do` porque o plano é de testes, não um registro de execução manual.
@@ -306,6 +348,6 @@ Projeto Azure: [Qa-rm563088](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm56308
 | MAN-12 | [Issue 12](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/12) |
 | MAN-13 | [Issue 13](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/13) |
 | MAN-14 | [Issue 14](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/14) |
+| MAN-15 | [Issue 15](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/15) |
 
 O projeto usa o processo Azure Basic, que oferece os work items Epic, Issue e Task; o recurso Test Plans informa licença limitada. Por isso, cada caso foi registrado como Issue com objetivo, entrada, saída esperada e procedimento completos na descrição, em vez de um Test Case nativo. Para cada execução futura, registrar data/hora e ambiente; resultado Passed/Failed/Blocked; build/commit; código HTTP e resposta sanitizada; IDs gerados de QA; captura de tela/log sem token, senha, connection string ou hash. Casos dependentes de Oracle só podem ser marcados Passed após execução em Oracle QA.
-

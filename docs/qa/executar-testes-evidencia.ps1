@@ -19,13 +19,13 @@ $resultsDirectory = Join-Path $repoRoot 'artifacts\qa-evidence'
 $trxPath = Join-Path $resultsDirectory 'sprint4-automacao.trx'
 $logPath = Join-Path $resultsDirectory 'sprint4-automacao-console.log'
 
-$filter = 'FullyQualifiedName~EndpointProtegido_SemToken_DeveRetornar401|FullyQualifiedName~EndpointGestor_ComTokenCidadao_DeveRetornar403|FullyQualifiedName~PoliticaLogin_DeveBloquearAposDuasRequisicoesERetornarRetryAfter|FullyQualifiedName~Readiness_DeveRetornar503QuandoOracleNaoPuderSerResolvido'
+$filter = 'FullyQualifiedName~EndpointProtegido_SemToken_DeveRetornar401|FullyQualifiedName~EndpointGestor_ComTokenCidadao_DeveRetornar403|FullyQualifiedName~PoliticaLogin_DeveBloquearAposDuasRequisicoesERetornarRetryAfter|FullyQualifiedName~Readiness_DeveRetornar503QuandoOracleNaoPuderSerResolvido|FullyQualifiedName~Liveness_SobCargaControlada_DeveResponder200EManterP95AbaixoDoLimite'
 
 New-Item -ItemType Directory -Path $resultsDirectory -Force | Out-Null
 Write-Host 'Alerta Cidadão | Automação de integração | Sprint 4'
 Write-Host 'Ferramenta: xUnit + ASP.NET Core TestServer | Ambiente: local isolado | Oracle: não conectado'
 Write-Host 'Limite de login de teste: 2 chamadas por 60 segundos; o terceiro POST deve retornar 429.'
-Write-Host 'Executando os quatro casos selecionados...'
+Write-Host 'Executando os cinco casos selecionados...'
 
 $testArguments = @(
     'test', $project,
@@ -57,10 +57,9 @@ foreach ($result in $results) {
 Write-Host ("Resumo: {0} executados | {1} aprovados | {2} com falha" -f $results.Count, ($results.Count - $failed.Count), $failed.Count)
 Write-Host 'Arquivo TRX gerado em artifacts/qa-evidence/sprint4-automacao.trx.'
 
-if ($testExitCode -ne 0 -or $results.Count -ne 4 -or $failed.Count -ne 0) {
+if ($testExitCode -ne 0 -or $results.Count -ne 5 -or $failed.Count -ne 0) {
     Get-Content -LiteralPath $logPath -Tail 30
     exit 1
 }
 
 exit 0
-

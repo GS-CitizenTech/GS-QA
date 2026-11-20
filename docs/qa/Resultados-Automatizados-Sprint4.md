@@ -1,19 +1,33 @@
-# Resultado dos testes automatizados — Sprint 4
+# Resultados automatizados — QA da Sprint 4
 
-**Data da execução:** 19/11/2026 · **Ambiente:** local, .NET 10.0.404, `Microsoft.AspNetCore.TestHost` · **Banco:** nenhum banco real; as integrações isoladas usam TestServer e dependências simuladas.
+## Suíte xUnit
 
-## Resultado registrado
+**Data:** 19/11/2026 · **Ambiente:** local, .NET SDK 10.0.404 · **Banco:** nenhum Oracle real; os testes usam TestServer, dependências isoladas e EF Core InMemory onde indicado.
 
-- Casos direcionados para a evidência: **4 aprovados, 0 falhas**.
-- Suíte completa xUnit: **34 aprovados, 0 falhas, 0 ignorados**.
-- Casos direcionados: ausência de JWT (`401`); cidadão em recurso exclusivo de gestor (`403`); terceira chamada após limite de duas no host isolado (`429` + `Retry-After`); readiness Oracle indisponível (`503` + `Unhealthy`).
+- Casos direcionados AUT-01 a AUT-05: **5 aprovados, 0 falhas**.
+- Suíte completa xUnit: **35 aprovados, 0 falhas, 0 ignorados**.
+- Casos cobrem autorização 401/403, rate limiting 429 com Retry-After, readiness indisponível 503 e carga concorrente leve de liveness no TestServer.
 
-Os resultados vêm da execução local dos comandos documentados em `Automacao-Testes-Sprint4.md`. O TRX da execução completa pode ser gerado novamente com `--logger "trx;LogFileName=sprint4-suite-completa.trx"`; não se inclui o TRX local neste repositório para evitar caminhos absolutos da máquina.
+Os resultados direcionados foram gerados pelo script executar-testes-evidencia.ps1. A suíte completa também foi executada com saída TRX. Os relatórios TRX locais ficam na pasta artifacts/qa-evidence do projeto e não foram incluídos aqui por conterem caminhos locais.
 
-## Observações da execução
+## Carga no Kestrel (AUT-06)
 
-- A restauração/build reportou aviso `NU1900`: a fonte NuGet não respondeu ao pedido de consulta de vulnerabilidades durante esta execução. Os pacotes necessários já estavam disponíveis e os testes executaram; o aviso não é um resultado de teste nem uma auditoria de dependências atualizada.
-- O host de teste JWT usa proteção de dados efêmera, e os hosts de teste removem providers de log dependentes do Event Log do Windows. Isso mantém as verificações reproduzíveis em CI e em ambiente sem permissão de escrita no log do sistema; não altera a configuração da API publicada.
-- A readiness real do Oracle e os CRUDs devem ser executados manualmente em Oracle QA, conforme o plano. Não marcar esses casos como aprovados com base nos testes simulados.
+**Data:** 19/11/2026 23:25 BRT · **Alvo:** API local em 127.0.0.1:5187/health/live · **Oracle:** não consultado.
 
+- Configuração: 20 usuários virtuais × 50 chamadas GET = 1.000 requisições.
+- Resultado: **1.000/1.000 válidas**, todas HTTP 200, 0 falhas.
+- Latência: média 2,68 ms; p50 0,79 ms; p95 7,05 ms; p99 67,90 ms; máxima 70,34 ms.
+- Vazão observada: 5.894,07 requisições/s.
+- Critério definido antes da execução: 100% HTTP 200 e p95 ≤ 2.000 ms.
+- Resultado: **APROVADO**.
 
+Arquivos da execução: docs/qa/evidencias/teste-carga-sprint4.csv e docs/qa/evidencias/teste-carga-sprint4.md.
+
+Este foi um smoke de carga leve na máquina local, sobre loopback e somente no endpoint de liveness. A rota não acessa Oracle, não grava dados e os números não devem ser tratados como benchmark de produção.
+
+## Observações
+
+- A restauração/build mostrou aviso NU1900 porque NuGet não conseguiu consultar o serviço de auditoria de vulnerabilidades durante a execução. Os pacotes já estavam disponíveis e os testes passaram; a auditoria de dependências não foi atualizada.
+- A suíte de testes existente exibe também um aviso do analisador xUnit2013 em UsuarioServiceTests; não afeta o resultado da execução.
+- Os testes de readiness com banco disponível usam dependência em memória; CRUD real e migrações continuam dependendo de Oracle QA.
+- O arquivo CSV registra somente número da amostra, código HTTP, latência, validade do corpo e tipo de erro. Não contém senha, token, dados pessoais ou connection string.

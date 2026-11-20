@@ -1,25 +1,38 @@
 # Testes do Alerta Cidadão
 
-Este repositório reúne os materiais de QA da Sprint 4 do projeto Alerta Cidadão.
+Este repositório junta os materiais de QA da Sprint 4 do Alerta Cidadão.
 
-## O que foi preparado
+## Plano manual
 
-- [Plano de testes manuais](docs/qa/Plano-Testes-Manuais-Sprint4.md), com 14 casos, dados de entrada, resultados esperados e passos para execução.
-- [Automação](docs/qa/Automacao-Testes-Sprint4.md), com quatro testes de integração feitos em xUnit e ASP.NET Core TestServer.
-- [Script para executar os testes](docs/qa/executar-testes-evidencia.ps1).
-- [Resultados registrados](docs/qa/Resultados-Automatizados-Sprint4.md). Na execução documentada, os quatro testes selecionados passaram e a suíte completa fechou com 34 aprovados.
-- [Matriz de cobertura](docs/qa/Matriz-Cobertura-QA-Sprint4.md), com os pontos cobertos e o que ainda depende de configuração ou implementação.
+O plano tem 15 casos com objetivo, dados de entrada, resultado esperado e passos. Os casos estão no Azure Boards, na iteração Sprint 4, como Issues 1 a 15.
 
-## Azure Boards
+- [Plano de testes manuais](docs/qa/Plano-Testes-Manuais-Sprint4.md)
+- [Projeto no Azure DevOps](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088)
+- [Caso MAN-15 no Azure Boards](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088/_workitems/edit/15)
 
-Os casos MAN-01 a MAN-14 estão cadastrados na iteração Sprint 4 do projeto [Qa-rm563088](https://dev.azure.com/gs-qa-rm5630880147/Qa-rm563088). Os links de cada item estão no plano de testes.
+## Automação
 
-## Como executar
+Há cinco casos xUnit selecionados para a demonstração e um runner separado para carga leve com a API iniciada em Kestrel.
 
-O script precisa do caminho local para a pasta do projeto Alerta Cidadão:
+- [Como preparar e executar](docs/qa/Automacao-Testes-Sprint4.md)
+- [Script dos cinco casos xUnit](docs/qa/executar-testes-evidencia.ps1)
+- [Runner de carga](tools/AlertaCidadao.LoadTest/Program.cs)
+- [Matriz de cobertura](docs/qa/Matriz-Cobertura-QA-Sprint4.md)
+- [Resultados registrados](docs/qa/Resultados-Automatizados-Sprint4.md)
+- [CSV da carga](docs/qa/evidencias/teste-carga-sprint4.csv)
+- [Resumo da carga](docs/qa/evidencias/teste-carga-sprint4.md)
 
-```powershell
-.\docs\qa\executar-testes-evidencia.ps1 -AppRoot "C:\caminho\para\AlertaCidadao"
-```
+Na execução registrada, passaram 5/5 casos selecionados e 35/35 testes da suíte. O teste de carga enviou 1.000 chamadas locais para /health/live: todas retornaram HTTP 200 e o p95 foi 7,05 ms. A medição é local e não representa capacidade de produção.
 
-O vídeo mostrando a configuração e a execução será acrescentado depois da gravação.
+Para repetir os cinco casos xUnit, na pasta deste repositório QA:
+
+    .\docs\qa\executar-testes-evidencia.ps1 -AppRoot "C:\caminho\para\AlertaCidadao"
+
+Para repetir a carga, na raiz do projeto Alerta Cidadão:
+
+    dotnet run --project .\tools\AlertaCidadao.LoadTest\AlertaCidadao.LoadTest.csproj --configuration Release -- --base-url http://127.0.0.1:5075 --path /health/live --users 20 --requests 50 --p95-limit-ms 2000 --output .\artifacts\qa-evidence\teste-carga-sprint4.csv
+
+## Vídeo
+
+O vídeo de configuração e execução será acrescentado depois da gravação.
+
